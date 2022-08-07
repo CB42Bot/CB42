@@ -1,3 +1,4 @@
+import asyncio
 from datetime import timedelta
 import discord
 from discord import Option
@@ -33,9 +34,23 @@ client = commands.Bot(command_prefix=prefix,
 
 @client.event
 async def on_ready():
-    await client.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.watching, name="cb!help"))
+    await client.change_presence(status=discord.Status.dnd, activity=discord.Game(name=f"on {len(client.guilds)} servers"))
+    await client.change_presence(status=discord.Status.dnd, activity=discord.Activity(type=discord.ActivityType.watching, name="cb!help | cb42bot.tk"))
+    await client.change_presence(status=discord.Status.dnd, activity=discord.Activity(type=discord.ActivityType.listening, name="Slash Commands!"))
     print(f"{client.user.name} says, Hello world")
 
+async def status():
+    await client.wait_until_ready()
+
+    statuses = ["https://cb42bot.tk",
+                f"on {len(client.guilds)} servers", "cb!help", "Slash Commands!"]
+
+    while not client.is_closed():
+
+        status = random.choice(statuses)
+        await client.change_presence(status=discord.Status.dnd, activity=discord.Game(name=status))
+
+        await asyncio.sleep(10)
 
 @client.event
 async def on_guild_join(guild):
@@ -670,6 +685,7 @@ async def on_message(message):
     await client.process_commands(message)
 
 try:
+    client.loop.create_task(status())
     client.run(token_)
 except:
     print("Make sure the token is correct!")
