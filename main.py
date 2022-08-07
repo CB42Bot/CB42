@@ -183,7 +183,7 @@ async def meme(ctx):
 @commands.cooldown(1, 5, commands.BucketType.user)
 @commands.has_permissions(manage_channels=True)
 async def slowmode(ctx, seconds:int):
-    t = ctx.channel
+    t = ctx.channel.id
     await ctx.channel.edit(slowmode_delay=seconds)
     await ctx.reply(f"**Set the slowmode for <#{t}> as** `{seconds}` **seconds** ✅", delete_after=5)
 
@@ -635,7 +635,7 @@ async def purge(ctx, amount: Option(int, required=True)):
 @commands.cooldown(1, 5, commands.BucketType.user)
 @commands.has_permissions(manage_channels=True)
 async def slowmode(ctx, seconds: Option(int, required=True)):
-    t = ctx.channel
+    t = ctx.channel.id
     await ctx.channel.edit(slowmode_delay=seconds)
     await ctx.respond(f"**Set the slowmode for <#{t}> as** `{seconds}` **seconds** ✅", delete_after=5)
 
