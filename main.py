@@ -115,12 +115,14 @@ async def ping(ctx):
     l = round(client.latency * 1000, 1)
     await ctx.reply(f"The bots ping is: `{l}`")
 
+
 @client.command(aliases=['code', 'secret', 'pass'])
 @commands.cooldown(1, 15, commands.BucketType.user)
 async def password(ctx):
     author = ctx.author
     await ctx.reply("Check your DM's‼", delete_after=3)
     await ctx.author.send(f"Your secret password is: `{am}`")
+
 
 @client.command()
 @commands.cooldown(1, 5, commands.BucketType.user)
@@ -158,6 +160,7 @@ async def meme(ctx):
 
             await ctx.reply(embed=embed)
 
+
 @client.command()
 @commands.cooldown(1, 5, commands.BucketType.user)
 @commands.has_permissions(manage_channels=True)
@@ -165,6 +168,7 @@ async def slowmode(ctx, seconds: Option(int, required=True)):
     t = ctx.channel
     await ctx.channel.edit(slowmode_delay=seconds)
     await ctx.reply(f"**Set the slowmode for <#{t}> as** `{seconds}` **seconds** ✅", delete_after=5)
+
 
 @client.command(aliases=['members', 'guildcount'])
 @commands.cooldown(1, 5, commands.BucketType.user)
@@ -276,17 +280,17 @@ async def removerole(ctx, user: discord.Member, *, role: discord.Role):
     await ctx.reply(f"Removed {role} from {user.mention}")
 
 
-@client.command(aliases=['clear'])
+@client.command(aliases=['purge'])
 @commands.has_permissions(manage_messages=True)
 @commands.cooldown(1, 5, commands.BucketType.user)
-async def purge(ctx, amount=1):
-    t = ctx.channel.id
-    newam = amount-1
-    if newam > 101:
-        await ctx.reply("Not allowed to clear these many messages, please try a number below 100", delete_after=3)
+async def clear(ctx, amount=1):
+    amount = amount+1
+    realamount = amount-1
+    if amount > 151:
+        await ctx.reply('**Not able to delete so many messages! Please try a number below 150.** ❌', delete_after=5)
     else:
-        z = await ctx.channel.purge(limit = amount)
-        await ctx.reply(f"**Cleared** `{len(z)}` **messages in** <#{t}>", delete_after=5)
+        await ctx.channel.purge(limit=amount)
+        await ctx.send(f'**Cleared {len(amount)} messages!** ✅', delete_after=3)
 
 
 @client.command(aliases=['close', 'shutup'])
@@ -494,12 +498,14 @@ async def invite(ctx):
 
     await ctx.respond(embed=embed, view=view, ephemeral=True)
 
+
 @client.slash_command(name="password", description="Makes you a random password")
 @commands.cooldown(1, 15, commands.BucketType.user)
 async def password(ctx):
     author = ctx.author
     await ctx.respond("Check your DM's‼", ephemeral=True)
     await ctx.author.send(f"Your secret password is: `{am}`")
+
 
 @client.slash_command(name="ban", description="Ban a member")
 @commands.cooldown(1, 5, commands.BucketType.user)
@@ -545,8 +551,9 @@ async def purge(ctx, amount: Option(int, required=True)):
     if amount > 101:
         await ctx.respond("Not allowed to clear these many messages, please try a number below 100", ephemeral=True)
     else:
-        z = await ctx.channel.purge(limit = amount)
+        z = await ctx.channel.purge(limit=amount)
         await ctx.respond(f"**Cleared** `{len(z)}` **messages in** <#{t}>", delete_after=5)
+
 
 @client.slash_command(name="slowmode", description="Change/set the slowmode of a channel")
 @commands.cooldown(1, 5, commands.BucketType.user)
