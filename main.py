@@ -1,3 +1,4 @@
+from datetime import timedelta
 import discord
 from discord import Option
 from discord.ext import commands
@@ -72,7 +73,7 @@ class DropDownMenu(discord.ui.View):
             view = View()
             modembed = discord.Embed(
                 title="Moderation commands",
-                description="`clear`, `kick`, `ban`, `unban`, `membercount`, `setprefix`, `addrole`, `delrole`",
+                description="`clear`, `kick`, `ban`, `unban`, `membercount`, `setprefix`, `addrole`, `delrole`, `mute`, `unmute`",
             )
 
             await interaction.response.send_message(embed=modembed, view=view, ephemeral=True)
@@ -316,14 +317,40 @@ async def on_command_error(ctx, error):
         await ctx.reply(error, delete_after=3)
 
 # SLASH
+@client.slash_command(name = 'mute', description = "mutes/timeouts a member")
+@commands.has_permissions(moderate_members = True)
+async def timeout(ctx, member: Option(discord.Member, required = True), reason: Option(str, required = False), days: Option(int, max_value = 15, default = 0, required = False), hours: Option(int, default = 0, required = False), minutes: Option(int, default = 0, required = False), seconds: Option(int, default = 0, required = False)): #setting each value with a default value of 0 reduces a lot of the code
+    guild = ctx.guild
+    if member.id == ctx.author.id:
+        await ctx.respond("You can't mute yourself!", ephemeral = True)
+        return
+    d = timedelta(days = days, hours = hours, minutes = minutes, seconds = seconds)
+    if d >= timedelta(days = 16): 
+        await ctx.respond("I can't mute someone for more than 28 days!", ephemeral = True)
+        return
+    if reason == None:
+        await member.timeout_for(d)
+        await ctx.member.send(f"You have been muted in **{guild}** for {days} days, {hours} hours, {minutes} minutes, and {seconds} seconds by <@{ctx.author.id}> for `{reason}")
+        await ctx.respond(f"<@{member.id}> has been muted for {days} days, {hours} hours, {minutes} minutes, and {seconds} seconds by <@{ctx.author.id}>")
+    else:
+        await member.timeout_for(d, reason = reason)
+        await ctx.member.send(f"You have been muted in **{guild}** for {days} days, {hours} hours, {minutes} minutes, and {seconds} seconds by <@{ctx.author.id}> for `{reason}")
+        await ctx.respond(f"<@{member.id}> has been muted for {days} days, {hours} hours, {minutes} minutes, and {seconds} seconds by <@{ctx.author.id}> for `{reason}`")
 
+@client.slash_command(name = 'unmute', description = "Unmutes a member")
+@commands.has_permissions(moderate_members = True)
+async def unmute(ctx, member: Option(discord.Member, required = True)):
+    guild = ctx.guild
+    await member.remove_timeout()
+    await ctx.member.send(f"You have been unmuted in **{guild}** by <@{ctx.author.id}>")
+    await ctx.respond(f"<@{member.id}> has been unmuted by <@{ctx.author.id}>")
 
 @client.slash_command(aliases=['prefix'])
 @commands.has_permissions(manage_guild=True)
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def setprefix(ctx, prefix=None):
     if prefix is None:
-        await ctx.respond("Please enter a prefix!", delete_after=5)
+        await ctx.respond("Please enter a prefix!", ephemeral = True)
     else:
         coll.update_one({"_id": ctx.guild.id}, {
                         "$set": {"prefix": prefix}}, upsert=True)
@@ -344,7 +371,7 @@ class DropDownMenuslash(discord.ui.View):
             view = View()
             modembed = discord.Embed(
                 title="Moderation commands",
-                description="`clear`, `kick`, `ban`, `unban`, `membercount`, `setprefix`, `addrole`, `delrole`",
+                description="`clear`, `kick`, `ban`, `unban`, `membercount`, `setprefix`, `addrole`, `delrole`, `mute`, `unmute`",
             )
 
             await interaction.response.send_message(embed=modembed, view=view, ephemeral=True)
