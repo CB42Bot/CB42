@@ -319,7 +319,7 @@ async def on_command_error(ctx, error):
 # SLASH
 @client.slash_command(name = 'mute', description = "mutes/timeouts a member")
 @commands.has_permissions(moderate_members = True)
-async def timeout(ctx, member: Option(discord.Member, required = True), reason: Option(str, required = False), days: Option(int, max_value = 15, default = 0, required = False), hours: Option(int, default = 0, required = False), minutes: Option(int, default = 0, required = False), seconds: Option(int, default = 0, required = False)): #setting each value with a default value of 0 reduces a lot of the code
+async def mute(ctx, member: Option(discord.Member, required = True), reason: Option(str, required = False), days: Option(int, max_value = 15, default = 0, required = False), hours: Option(int, default = 0, required = False), minutes: Option(int, default = 0, required = True), seconds: Option(int, default = 0, required = False)): #setting each value with a default value of 0 reduces a lot of the code
     guild = ctx.guild
     if member.id == ctx.author.id:
         await ctx.respond("You can't mute yourself!", ephemeral = True)
