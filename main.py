@@ -644,7 +644,7 @@ async def slowmode(ctx, seconds: Option(int, required=True)):
 async def rank(ctx):
     author_id = ctx.author.id
     level = collection.find_one({"_id": author_id})["Level"]
-    print(level)
+    await ctx.respond(level)
 # SLASH
 
 
