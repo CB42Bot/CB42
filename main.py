@@ -283,10 +283,10 @@ async def purge(ctx, amount=1):
     t = ctx.channel.id
     newam = amount-1
     if newam > 101:
-        await ctx.respond("Not allowed to clear these many messages, please try a number below 100", ephemeral=True)
+        await ctx.reply("Not allowed to clear these many messages, please try a number below 100", delete_after=3)
     else:
         z = await ctx.channel.purge(limit = amount)
-        await ctx.respond(f"**Cleared** `{len(z)}` **messages in** <#{t}>", delete_after=5)
+        await ctx.reply(f"**Cleared** `{len(z)}` **messages in** <#{t}>", delete_after=5)
 
 
 @client.command(aliases=['close', 'shutup'])
