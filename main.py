@@ -100,7 +100,7 @@ class DropDownMenu(discord.ui.View):
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def help(ctx):
     helpem = discord.Embed(
-        title="CB42 helpnel",
+        title="CB42 help panel",
         url="https://cb42bot.tk",
         description="CB42 is an all in one bot you ever need.."
     )
@@ -363,7 +363,7 @@ class DropDownMenuslash(discord.ui.View):
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def help(ctx):
     helpem = discord.Embed(
-        title="CB42 helpnel",
+        title="CB42 help panel",
         url="https://cb42bot.tk",
         description="CB42 is an all in one bot you ever need.."
     )
