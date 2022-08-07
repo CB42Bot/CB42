@@ -411,14 +411,16 @@ async def setprefix(ctx, prefix=None):
 @client.slash_command(name="help", description="Get all the commands of the bot")
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def help(ctx):
-    helpem = discord.Embed(
+    embed = discord.Embed(
         title="CB42 help panel",
         url="https://cb42bot.tk",
         description="CB42 is an all in one bot you ever need.."
     )
+    embed.set_image(url="https://cdn.discordapp.com/attachments/943039554108133378/1005764186485305345/standard.gif")
+
     dropdowns = DropDownMenu()
 
-    await ctx.respond(embed=helpem, view=dropdowns)
+    await ctx.respond(embed=embed, view=dropdowns)
 
 
 @client.slash_command(name="ping", description="Get the bots latency")
