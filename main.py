@@ -81,7 +81,7 @@ class DropDownMenu(discord.ui.View):
             view = View()
             funembed = discord.Embed(
                 title="Fun commands",
-                description="`cat`, `dog`, `meme`, `showerthought`, `dice`",
+                description="`cat`, `dog`, `meme`, `showerthought`, `dice`, password",
             )
 
             await interaction.response.send_message(embed=funembed, view=view, ephemeral=True)
@@ -115,6 +115,12 @@ async def ping(ctx):
     l = round(client.latency * 1000, 1)
     await ctx.reply(f"The bots ping is: `{l}`")
 
+@client.command(aliases=['code', 'secret', 'pass'])
+@commands.cooldown(1, 15, commands.BucketType.user)
+async def password(ctx):
+    author = ctx.author
+    await ctx.reply("Check your DM's‼", delete_after=3)
+    await ctx.author.send(f"Your secret password is: `{am}`")
 
 @client.command()
 @commands.cooldown(1, 5, commands.BucketType.user)
@@ -270,18 +276,17 @@ async def removerole(ctx, user: discord.Member, *, role: discord.Role):
     await ctx.reply(f"Removed {role} from {user.mention}")
 
 
-@client.command(aliases=['purge'])
+@client.command(aliases=['clear'])
 @commands.has_permissions(manage_messages=True)
 @commands.cooldown(1, 5, commands.BucketType.user)
-async def clear(ctx, amount=1):
-    c = ctx.channel.id
-    amount = amount+1
-    r = amount-1
-    if amount > 101:
-        await ctx.reply('**Not able to delete so many messages! Please try a number below 100.**', delete_after=5)
+async def purge(ctx, amount=1):
+    t = ctx.channel.id
+    newam = amount-1
+    if newam > 101:
+        await ctx.respond("Not allowed to clear these many messages, please try a number below 100", ephemeral=True)
     else:
-        await ctx.channel.purge(limit=amount)
-        await ctx.send(f'Cleared `{r}` messages in <#{c}>', delete_after=3)
+        z = await ctx.channel.purge(limit = amount)
+        await ctx.respond(f"**Cleared** `{len(z)}` **messages in** <#{t}>", delete_after=5)
 
 
 @client.command(aliases=['close', 'shutup'])
@@ -344,7 +349,7 @@ class DropDownMenuslash(discord.ui.View):
             view = View()
             funembed = discord.Embed(
                 title="Fun commands",
-                description="`cat`, `dog`, `meme`, `showerthought`, `dice`",
+                description="`cat`, `dog`, `meme`, `showerthought`, `dice`, `password`",
             )
 
             await interaction.response.send_message(embed=funembed, view=view, ephemeral=True)
@@ -489,6 +494,12 @@ async def invite(ctx):
 
     await ctx.respond(embed=embed, view=view, ephemeral=True)
 
+@client.slash_command(name="password", description="Makes you a random password")
+@commands.cooldown(1, 15, commands.BucketType.user)
+async def password(ctx):
+    author = ctx.author
+    await ctx.respond("Check your DM's‼", ephemeral=True)
+    await ctx.author.send(f"Your secret password is: `{am}`")
 
 @client.slash_command(name="ban", description="Ban a member")
 @commands.cooldown(1, 5, commands.BucketType.user)
@@ -526,18 +537,16 @@ async def removerole(ctx, user: discord.Member, *, role: discord.Role):
     await ctx.respond(f"Removed {role} from {user.mention}")
 
 
-@client.slash_command(name="clear", description="Clear messages in a channel")
+@client.slash_command(name="purge", descripton="Clears the amount of messages specified")
 @commands.has_permissions(manage_messages=True)
 @commands.cooldown(1, 5, commands.BucketType.user)
-async def clear(ctx, amount:Option(int, required=True)):
-    c = ctx.channel.id
-    amount = amount+1
-    r = amount-1
+async def purge(ctx, amount: Option(int, required=True)):
+    t = ctx.channel.id
     if amount > 101:
-        await ctx.respond('**Not able to delete so many messages! Please try a number below 100.**', ephemeral=True)
+        await ctx.respond("Not allowed to clear these many messages, please try a number below 100", ephemeral=True)
     else:
-        await ctx.channel.purge(limit=amount)
-        await ctx.respond(f'Cleared `{r}` messages in <#{c}>', delete_after=3)
+        z = await ctx.channel.purge(limit = amount)
+        await ctx.respond(f"**Cleared** `{len(z)}` **messages in** <#{t}>", delete_after=5)
 
 @client.slash_command(name="slowmode", description="Change/set the slowmode of a channel")
 @commands.cooldown(1, 5, commands.BucketType.user)
