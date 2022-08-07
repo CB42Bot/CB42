@@ -1,10 +1,8 @@
-import datetime
 import discord
 from discord import Option
 from discord.ext import commands
 from discord.ext.commands import *
 from discord.ui import *
-from discord.utils import *
 import aiohttp
 import random
 import pymongo
