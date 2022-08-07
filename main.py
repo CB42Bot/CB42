@@ -13,7 +13,7 @@ from defs import *
 
 ca = certifi.where()
 intents = discord.Intents().all()
-token_ = "MTAwNDcyNzI3NDAzMTAzODU3NA.GAtfaZ.XgGAUv--cb8pvokVoBIROysFAmdroL7TK_7IpU"
+token_ = "MTAwNDcyNzI3NDAzMTAzODU3NA.G1HOLm.loZFWNIh_1YWLXvrOf-JC5KaJmQs5jOyRvRjfM"
 mango_url = "mongodb+srv://codemilo:amogus@cb42.tp0m3.mongodb.net/test"
 cluster = MongoClient(mango_url, tlsCAFile=ca)
 db = cluster["cb42"]
