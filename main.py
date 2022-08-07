@@ -39,6 +39,7 @@ async def on_ready():
     await client.change_presence(status=discord.Status.dnd, activity=discord.Activity(type=discord.ActivityType.listening, name="Slash Commands!"))
     print(f"{client.user.name} says, Hello world")
 
+
 async def status():
     await client.wait_until_ready()
 
@@ -51,6 +52,7 @@ async def status():
         await client.change_presence(status=discord.Status.dnd, activity=discord.Game(name=status))
 
         await asyncio.sleep(10)
+
 
 @client.event
 async def on_guild_join(guild):
@@ -295,6 +297,7 @@ async def removerole(ctx, user: discord.Member, *, role: discord.Role):
     await user.remove_roles(role)
     await ctx.reply(f"Removed {role} from {user.mention}")
 
+
 @client.command()
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def credits(ctx):
@@ -309,6 +312,7 @@ async def credits(ctx):
                           description=f"CB42 was made by [sudo-adrian](https://github.com/sudo-adrian) and [codemilo-ui](https://github.com/codemilo-ui)")
 
     await ctx.reply(embed=embed, view=view)
+
 
 @client.command(aliases=['purge'])
 @commands.has_permissions(manage_messages=True)
@@ -346,35 +350,39 @@ async def on_command_error(ctx, error):
         await ctx.reply(error, delete_after=3)
 
 # SLASH
-@client.slash_command(name = 'mute', description = "mutes/timeouts a member")
-@commands.has_permissions(moderate_members = True)
-async def mute(ctx, member: Option(discord.Member, required = True), reason: Option(str, required = False), days: Option(int, max_value = 15, default = 0, required = False), hours: Option(int, default = 0, required = False), minutes: Option(int, default = 0, required = True), seconds: Option(int, default = 0, required = False)):
+
+
+@client.slash_command(name='mute', description="mutes/timeouts a member")
+@commands.has_permissions(moderate_members=True)
+async def mute(ctx, member: Option(discord.Member, required=True), reason: Option(str, required=False), days: Option(int, max_value=15, default=0, required=False), hours: Option(int, default=0, required=False), minutes: Option(int, default=0, required=True), seconds: Option(int, default=0, required=False)):
     if member.id == ctx.author.id:
-        await ctx.respond("You can't mute yourself!", ephemeral = True)
+        await ctx.respond("You can't mute yourself!", ephemeral=True)
         return
-    d = timedelta(days = days, hours = hours, minutes = minutes, seconds = seconds)
-    if d >= timedelta(days = 16): 
-        await ctx.respond("I can't mute someone for more than 28 days!", ephemeral = True)
+    d = timedelta(days=days, hours=hours, minutes=minutes, seconds=seconds)
+    if d >= timedelta(days=16):
+        await ctx.respond("I can't mute someone for more than 28 days!", ephemeral=True)
         return
     if reason == None:
         await member.timeout_for(d)
         await ctx.respond(f"<@{member.id}> has been muted for {days} days, {hours} hours, {minutes} minutes, and {seconds} seconds by <@{ctx.author.id}>")
     else:
-        await member.timeout_for(d, reason = reason)
+        await member.timeout_for(d, reason=reason)
         await ctx.respond(f"<@{member.id}> has been muted for {days} days, {hours} hours, {minutes} minutes, and {seconds} seconds by <@{ctx.author.id}> for `{reason}`")
 
-@client.slash_command(name = 'unmute', description = "Unmutes a member")
-@commands.has_permissions(moderate_members = True)
-async def unmute(ctx, member: Option(discord.Member, required = True)):
+
+@client.slash_command(name='unmute', description="Unmutes a member")
+@commands.has_permissions(moderate_members=True)
+async def unmute(ctx, member: Option(discord.Member, required=True)):
     await member.remove_timeout()
     await ctx.respond(f"<@{member.id}> has been unmuted by <@{ctx.author.id}>")
+
 
 @client.slash_command(aliases=['prefix'])
 @commands.has_permissions(manage_guild=True)
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def setprefix(ctx, prefix=None):
     if prefix is None:
-        await ctx.respond("Please enter a prefix!", ephemeral = True)
+        await ctx.respond("Please enter a prefix!", ephemeral=True)
     else:
         coll.update_one({"_id": ctx.guild.id}, {
                         "$set": {"prefix": prefix}}, upsert=True)
@@ -550,6 +558,7 @@ async def invite(ctx):
 
     await ctx.respond(embed=embed, view=view, ephemeral=True)
 
+
 @client.slash_command(name="credits", description="Shows who made CB42")
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def credits(ctx):
@@ -564,6 +573,7 @@ async def credits(ctx):
                           description=f"CB42 was made by [sudo-adrian](https://github.com/sudo-adrian) and [codemilo-ui](https://github.com/codemilo-ui)")
 
     await ctx.respond(embed=embed, view=view, ephemeral=True)
+
 
 @client.slash_command(name="password", description="Makes you a random password")
 @commands.cooldown(1, 15, commands.BucketType.user)
@@ -638,6 +648,13 @@ async def on_message(message):
         return
 
     if message.author.bot:
+        return
+
+    if client.user.mentioned_in(message) and message.mention_everyone is False:
+        prefix = coll.find_one({"_id": message.guild.id})['prefix']
+        embed = discord.Embed(
+            title="CB42", description=f"Type `{prefix}`help for more info")
+        await message.channel.send(embed=embed, delete_after=10)
         return
 
     author_id = message.author.id
