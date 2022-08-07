@@ -91,7 +91,7 @@ class DropDownMenu(discord.ui.View):
             view = View()
             inembed = discord.Embed(
                 title="Information commands",
-                description="`invite`, `ping`",
+                description="`invite`, `ping`, `credits`",
             )
 
             await interaction.response.send_message(embed=inembed, view=view, ephemeral=True)
@@ -280,6 +280,20 @@ async def removerole(ctx, user: discord.Member, *, role: discord.Role):
     await user.remove_roles(role)
     await ctx.reply(f"Removed {role} from {user.mention}")
 
+@client.command()
+@commands.cooldown(1, 5, commands.BucketType.user)
+async def credits(ctx):
+    cbt = Button(
+        label="Github",
+        url="https://github.com/CB42Bot/CB42"
+    )
+    view = View()
+    view.add_item(cbt)
+
+    embed = discord.Embed(title=f"Developers of {client.user.name}",
+                          description=f"CB42 was made by [sudo-adrian](https://github.com/sudo-adrian) and [codemilo-ui](https://github.com/codemilo-ui)")
+
+    await ctx.respond(embed=embed, view=view)
 
 @client.command(aliases=['purge'])
 @commands.has_permissions(manage_messages=True)
@@ -384,7 +398,7 @@ class DropDownMenuslash(discord.ui.View):
             view = View()
             inembed = discord.Embed(
                 title="Information commands",
-                description="`invite`, `ping`",
+                description="`invite`, `ping`, `credits`",
             )
 
             await interaction.response.send_message(embed=inembed, view=view, ephemeral=True)
@@ -516,10 +530,25 @@ async def invite(ctx):
     view = View()
     view.add_item(invitebt)
 
-    embed = discord.Embed(title="Invite CB42")
+    embed = discord.Embed(title=f"Invite {client.user.name}",
+                          description=f"Invite CB42 from [here](https://discord.com/api/oauth2/authorize?client_id=1004727274031038574&permissions=8&redirect_uri=https%3A%2F%2Fcb42bot.tk&response_type=code&scope=bot%20connections%20applications.commands)")
 
     await ctx.respond(embed=embed, view=view, ephemeral=True)
 
+@client.slash_command(name="credits", description="Shows who made CB42")
+@commands.cooldown(1, 5, commands.BucketType.user)
+async def credits(ctx):
+    cbt = Button(
+        label="Github",
+        url="https://github.com/CB42Bot/CB42"
+    )
+    view = View()
+    view.add_item(cbt)
+
+    embed = discord.Embed(title=f"Developers of {client.user.name}",
+                          description=f"CB42 was made by [sudo-adrian](https://github.com/sudo-adrian) and [codemilo-ui](https://github.com/codemilo-ui)")
+
+    await ctx.respond(embed=embed, view=view, ephemeral=True)
 
 @client.slash_command(name="password", description="Makes you a random password")
 @commands.cooldown(1, 15, commands.BucketType.user)
