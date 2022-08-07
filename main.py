@@ -44,7 +44,7 @@ async def status():
     await client.wait_until_ready()
 
     statuses = ["https://cb42bot.tk",
-                f"on {len(client.guilds)} servers", "cb!help", "Slash Commands!"]
+                f"on {len(client.guilds)} servers", "cb!help"]
 
     while not client.is_closed():
 
@@ -639,6 +639,12 @@ async def slowmode(ctx, seconds: Option(int, required=True)):
     await ctx.channel.edit(slowmode_delay=seconds)
     await ctx.respond(f"**Set the slowmode for <#{t}> as** `{seconds}` **seconds** ✅", delete_after=5)
 
+@client.slash_command(name="rank", description="Shows the rank of a user")
+@commands.cooldown(1, 5, commands.BucketType.user)
+async def rank(ctx):
+    author_id = ctx.author.id
+    level = collection.find_one({"_id": author_id})["Level"]
+    print(level)
 # SLASH
 
 
