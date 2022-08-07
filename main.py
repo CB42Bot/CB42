@@ -293,7 +293,7 @@ async def credits(ctx):
     embed = discord.Embed(title=f"Developers of {client.user.name}",
                           description=f"CB42 was made by [sudo-adrian](https://github.com/sudo-adrian) and [codemilo-ui](https://github.com/codemilo-ui)")
 
-    await ctx.respond(embed=embed, view=view)
+    await ctx.reply(embed=embed, view=view)
 
 @client.command(aliases=['purge'])
 @commands.has_permissions(manage_messages=True)
