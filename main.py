@@ -1,5 +1,7 @@
+import os
 import asyncio
 from datetime import timedelta
+import datetime
 import discord
 from discord import Option
 from discord.ext import commands
@@ -15,12 +17,13 @@ from defs import *
 
 ca = certifi.where()
 intents = discord.Intents().all()
-token_ = "MTAwNDcyNzI3NDAzMTAzODU3NA.G1HOLm.loZFWNIh_1YWLXvrOf-JC5KaJmQs5jOyRvRjfM"
-mango_url = "mongodb+srv://codemilo:amogus@cb42.tp0m3.mongodb.net/test"
+token_ = os.environ['TOKEN'] 
+mango_url = os.environ['MONGO'] 
 cluster = MongoClient(mango_url, tlsCAFile=ca)
 db = cluster["cb42"]
 coll = db["prefix"]
 collection = db["level"]
+warn = db["warnings"]
 
 
 def prefix(client, message):
@@ -92,7 +95,7 @@ class DropDownMenu(discord.ui.View):
             view = View()
             modembed = discord.Embed(
                 title="Moderation commands",
-                description="`clear`, `kick`, `ban`, `unban`, `membercount`, `setprefix`, `addrole`, `delrole`, `mute`, `unmute`",
+                description="`clear`, `kick`, `ban`, `unban`, `membercount`, `setprefix`, `addrole`, `delrole`, `mute`, `unmute`, `warn`",
             )
 
             await interaction.response.send_message(embed=modembed, view=view, ephemeral=True)
@@ -101,7 +104,7 @@ class DropDownMenu(discord.ui.View):
             view = View()
             funembed = discord.Embed(
                 title="Fun commands",
-                description="`cat`, `dog`, `meme`, `showerthought`, `dice`, password",
+                description="`cat`, `dog`, `meme`, `showerthought`, `dice`, `password`, `eightball`",
             )
 
             await interaction.response.send_message(embed=funembed, view=view, ephemeral=True)
@@ -110,7 +113,7 @@ class DropDownMenu(discord.ui.View):
             view = View()
             inembed = discord.Embed(
                 title="Information commands",
-                description="`invite`, `ping`, `credits`",
+                description="`invite`, `ping`, `credits`, `uptime`",
             )
 
             await interaction.response.send_message(embed=inembed, view=view, ephemeral=True)
@@ -260,6 +263,69 @@ async def kick(ctx, member: discord.Member = None, *, reason=None):
     await member.kick(reason=reason)
     await ctx.reply(f"Successfully kicked {member.mention}")
 
+@client.command()
+@commands.has_permissions(manage_guild=True)
+@commands.cooldown(1, 5, commands.BucketType.user)
+async def warn(ctx, user:discord.Member, *, reason):
+    guild = ctx.guild
+    id = user.id
+    if warn.count_documents({"memberid": id}) == 0:
+        warn.insert_one({"memberid": id, "warns": 0})
+
+    warn_count = warn.find_one({"memberid": id})
+
+    count = warn_count["warns"]
+    new_count = count + 1
+
+    warn.update_one({"memberid": id}, {"$set": {"warns": new_count}})
+
+    await ctx.reply(f"Warned {user.mention} for **{reason}** in **{ctx.guild}**| This user has **{new_count}** warnings now.")
+
+@client.command(aliases=['8b', '8ball'])
+@commands.cooldown(1, 5, commands.BucketType.user)
+async def eightball(ctx, *, question):
+    responses = [
+        'Hell no.',
+        'Prolly not.',
+        'Idk bro.',
+        'Prolly.',
+        'Hell yeah my dude.',
+        'It is certain.',
+        'It is decidedly so.',
+        'Without a Doubt.',
+        'Yes - Definitely.',
+        'You may rely on it.',
+        'As i see it, Yes.',
+        'Most Likely.',
+        'Outlook Good.',
+        'Yes!',
+        'No!',
+        'Signs a point to Yes!',
+        'Reply Hazy, Try again.',
+        'Better not tell you know.',
+        'Cannot predict now.',
+        'Concentrate and ask again.',
+        "Don't Count on it.",
+        'My reply is No.',
+        'My sources say No.',
+        'Outlook not so good.',
+        'Very Doubtful']
+    eightbembed = discord.Embed(
+        title=f"{question}", description=f"{random.choice(responses)}")
+    await ctx.reply(embed=eightbembed)
+
+
+@client.command()
+@commands.cooldown(1, 5, commands.BucketType.user)
+async def uptime(ctx):
+    delta_uptime = datetime.utcnow() - client.launch_time
+    hours, remainder = divmod(int(delta_uptime.total_seconds()), 3600)
+    minutes, seconds = divmod(remainder, 60)
+    days, hours = divmod(hours, 24)
+    embed = discord.Embed(title="**CB42's Uptime**",
+                          description=f"`CB42 has been online for -` {days}d, {hours}h, {minutes}m, {seconds}s")
+
+    await ctx.reply(embed=embed)
 
 @client.command()
 @commands.cooldown(1, 5, commands.BucketType.user)
@@ -628,6 +694,70 @@ async def rank(ctx):
     author_id = ctx.author.id
     level = collection.find_one({"_id": author_id})["Level"]
     await ctx.respond(f"**You are level:** `{level}`")
+
+@client.slash_command(name="warn", description="Warn a user")
+@commands.has_permissions(manage_guild=True)
+@commands.cooldown(1, 5, commands.BucketType.user)
+async def warn(ctx, user:Option(discord.Member, required=True), *, reason):
+    guild = ctx.guild
+    id = user.id
+    if warn.count_documents({"memberid": id}) == 0:
+        warn.insert_one({"memberid": id, "warns": 0})
+
+    warn_count = warn.find_one({"memberid": id})
+
+    count = warn_count["warns"]
+    new_count = count + 1
+
+    warn.update_one({"memberid": id}, {"$set": {"warns": new_count}})
+
+    await ctx.respond(f"Warned {user.mention} for **{reason}** in **{ctx.guild}**| This user has **{new_count}** warnings now.")
+
+@client.slash_command(name="eightball", description="Ask some questions!")
+@commands.cooldown(1, 5, commands.BucketType.user)
+async def eightball(ctx, *, question):
+    responses = [
+        'Hell no.',
+        'Prolly not.',
+        'Idk bro.',
+        'Prolly.',
+        'Hell yeah my dude.',
+        'It is certain.',
+        'It is decidedly so.',
+        'Without a Doubt.',
+        'Yes - Definitely.',
+        'You may rely on it.',
+        'As i see it, Yes.',
+        'Most Likely.',
+        'Outlook Good.',
+        'Yes!',
+        'No!',
+        'Signs a point to Yes!',
+        'Reply Hazy, Try again.',
+        'Better not tell you know.',
+        'Cannot predict now.',
+        'Concentrate and ask again.',
+        "Don't Count on it.",
+        'My reply is No.',
+        'My sources say No.',
+        'Outlook not so good.',
+        'Very Doubtful']
+    eightbembed = discord.Embed(
+        title=f"{question}", description=f"{random.choice(responses)}")
+    await ctx.respond(embed=eightbembed)
+
+
+@client.slash_command(name="uptime", description="Check how long CB42 has been up for")
+@commands.cooldown(1, 5, commands.BucketType.user)
+async def uptime(ctx):
+    delta_uptime = datetime.utcnow() - client.launch_time
+    hours, remainder = divmod(int(delta_uptime.total_seconds()), 3600)
+    minutes, seconds = divmod(remainder, 60)
+    days, hours = divmod(hours, 24)
+    embed = discord.Embed(title="**CB42's Uptime**",
+                          description=f"`CB42 has been online for -` {days}d, {hours}h, {minutes}m, {seconds}s")
+
+    await ctx.respond(embed=embed, ephemeral=True)
 # SLASH
 
 
