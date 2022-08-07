@@ -83,7 +83,9 @@ class DropDownMenu(discord.ui.View):
         discord.SelectOption(
             label="Fun", description="Fun commands", emoji="🚀"),
         discord.SelectOption(
-            label="Information", description="Information commands commands", emoji="ℹ")
+            label="Information", description="Information commands", emoji="ℹ"),
+        discord.SelectOption(
+            label="Level", description="Level commands", emoji="⬆")
     ])
     async def callback(self, select, interaction: discord.Interaction):
         if select.values[0] == "Moderation":
@@ -112,6 +114,15 @@ class DropDownMenu(discord.ui.View):
             )
 
             await interaction.response.send_message(embed=inembed, view=view, ephemeral=True)
+
+        if select.values[0] == "Level":
+            view = View()
+            lnembed = discord.Embed(
+                title="Level commands",
+                description="`rank`",
+            )
+
+            await interaction.response.send_message(embed=lnembed, view=view, ephemeral=True)
 
 
 @client.command(aliases=['commands'])
@@ -337,6 +348,12 @@ async def shutdown(ctx):
     else:
         await ctx.reply("Not allowed")
 
+@client.command(aliases=['level'])
+@commands.cooldown(1, 5, commands.BucketType.user)
+async def rank(ctx):
+    author_id = ctx.author.id
+    level = collection.find_one({"_id": author_id})["Level"]
+    await ctx.reply(f"**You are level:** `{level}`")
 
 @client.event
 async def on_command_error(ctx, error):
@@ -388,45 +405,6 @@ async def setprefix(ctx, prefix=None):
                         "$set": {"prefix": prefix}}, upsert=True)
         await ctx.respond("Prefix has been changed to: {}".format(prefix))
 
-
-class DropDownMenuslash(discord.ui.View):
-    @discord.ui.select(placeholder="Select a value", min_values=1, max_values=1, options=[
-        discord.SelectOption(label="Moderation",
-                             description="Moderation commands", emoji="🚩"),
-        discord.SelectOption(
-            label="Fun", description="Fun commands", emoji="🚀"),
-        discord.SelectOption(
-            label="Information", description="Information commands commands", emoji="ℹ")
-    ])
-    async def callback(self, select, interaction: discord.Interaction):
-        if select.values[0] == "Moderation":
-            view = View()
-            modembed = discord.Embed(
-                title="Moderation commands",
-                description="`clear`, `kick`, `ban`, `unban`, `membercount`, `setprefix`, `addrole`, `delrole`, `mute`, `unmute`",
-            )
-
-            await interaction.response.send_message(embed=modembed, view=view, ephemeral=True)
-
-        if select.values[0] == "Fun":
-            view = View()
-            funembed = discord.Embed(
-                title="Fun commands",
-                description="`cat`, `dog`, `meme`, `showerthought`, `dice`, `password`",
-            )
-
-            await interaction.response.send_message(embed=funembed, view=view, ephemeral=True)
-
-        if select.values[0] == "Information":
-            view = View()
-            inembed = discord.Embed(
-                title="Information commands",
-                description="`invite`, `ping`, `credits`",
-            )
-
-            await interaction.response.send_message(embed=inembed, view=view, ephemeral=True)
-
-
 @client.slash_command(name="help", description="Get all the commands of the bot")
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def help(ctx):
@@ -435,7 +413,7 @@ async def help(ctx):
         url="https://cb42bot.tk",
         description="CB42 is an all in one bot you ever need.."
     )
-    dropdowns = DropDownMenuslash()
+    dropdowns = DropDownMenu()
 
     await ctx.respond(embed=helpem, view=dropdowns)
 
@@ -644,7 +622,7 @@ async def slowmode(ctx, seconds: Option(int, required=True)):
 async def rank(ctx):
     author_id = ctx.author.id
     level = collection.find_one({"_id": author_id})["Level"]
-    await ctx.respond(level)
+    await ctx.respond(f"**You are level:** `{level}`")
 # SLASH
 
 
