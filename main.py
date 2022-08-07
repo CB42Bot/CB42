@@ -182,7 +182,7 @@ async def meme(ctx):
 @client.command()
 @commands.cooldown(1, 5, commands.BucketType.user)
 @commands.has_permissions(manage_channels=True)
-async def slowmode(ctx, seconds: Option(int, required=True)):
+async def slowmode(ctx, seconds:int):
     t = ctx.channel
     await ctx.channel.edit(slowmode_delay=seconds)
     await ctx.reply(f"**Set the slowmode for <#{t}> as** `{seconds}` **seconds** ✅", delete_after=5)
