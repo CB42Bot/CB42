@@ -2,6 +2,7 @@ import os
 import asyncio
 from datetime import timedelta
 import datetime
+from datetime import *
 import discord
 from discord import Option
 from discord.ext import commands
@@ -15,11 +16,11 @@ from pymongo import MongoClient
 from defs import *
 
 
-ca = certifi.where()
+e = certifi.where()
 intents = discord.Intents().all()
 token_ = os.environ['TOKEN'] 
 mango_url = os.environ['MONGO'] 
-cluster = MongoClient(mango_url, tlsCAFile=ca)
+cluster = MongoClient(mango_url, tlsCAFile=e)
 db = cluster["cb42"]
 coll = db["prefix"]
 collection = db["level"]
@@ -33,7 +34,7 @@ def prefix(client, message):
 client = commands.Bot(command_prefix=prefix,
                       case_insensitive=True, help_command=None, intents=intents)
 
-
+client.launch_time = datetime.utcnow()
 @client.event
 async def on_ready():
     await client.change_presence(status=discord.Status.dnd, activity=discord.Game(name=f"on {len(client.guilds)} servers"))
@@ -45,8 +46,7 @@ async def on_ready():
 async def status():
     await client.wait_until_ready()
 
-    statuses = ["https://cb42bot.tk",
-                f"on {len(client.guilds)} servers", "cb!help"]
+    statuses = [f"on {len(client.guilds)} servers", "cb!help"]
 
     while not client.is_closed():
 
@@ -75,7 +75,7 @@ async def setprefix(ctx, prefix=None):
     else:
         coll.update_one({"_id": ctx.guild.id}, {
                         "$set": {"prefix": prefix}}, upsert=True)
-        await ctx.reply("Prefix has been changed to: {}".format(prefix))
+        await ctx.reply("**Prefix has been changed to:** `{}`".format(prefix))
 
 
 class DropDownMenu(discord.ui.View):
@@ -147,7 +147,8 @@ async def help(ctx):
 @commands.cooldown(1, 15, commands.BucketType.user)
 async def ping(ctx):
     l = round(client.latency * 1000, 1)
-    await ctx.reply(f"The bots ping is: `{l}`")
+    embed = discord.Embed(title="Pong 🏓", description=f"The bots ping is: `{l}`")
+    await ctx.reply(embed=embed)
 
 
 @client.command(aliases=['code', 'secret', 'pass'])
@@ -201,7 +202,8 @@ async def meme(ctx):
 async def slowmode(ctx, seconds:int):
     t = ctx.channel.id
     await ctx.channel.edit(slowmode_delay=seconds)
-    await ctx.reply(f"**Set the slowmode for <#{t}> as** `{seconds}` **seconds** ✅", delete_after=5)
+    embed = discord.Embed(title="Success ✅", description=f"**Set the slowmode for <#{t}> as** `{seconds}` **seconds**")
+    await ctx.reply(embed=embed, delete_after=5)
 
 
 @client.command(aliases=['members', 'guildcount'])
@@ -248,7 +250,8 @@ async def dice(ctx):
         '4',
         '5',
         '6']
-    await ctx.reply(f"Your random number is: {random.choice(num)}")
+    embed = discord.Embed(title="Your random number is...", description=f"Your random number is: {random.choice(num)}")
+    await ctx.reply(embed=embed)
 
 
 @client.command()
@@ -260,7 +263,8 @@ async def kick(ctx, member: discord.Member = None, *, reason=None):
     if reason == None:
         reason = "None"
     await member.kick(reason=reason)
-    await ctx.reply(f"Successfully kicked {member.mention}")
+    embed = discord.Embed(title="Success ✅", description=f"Successfully kicked {member.mention} from **{ctx.guild}**")
+    await ctx.reply(embed=embed)
 
 @client.command(aliases=['8b', '8ball'])
 @commands.cooldown(1, 5, commands.BucketType.user)
@@ -326,14 +330,14 @@ async def invite(ctx):
 @client.command()
 @commands.cooldown(1, 5, commands.BucketType.user)
 @commands.has_permissions(ban_members=True)
-async def ban(ctx, member: discord.Member = None, *, reason=None):
+async def kick(ctx, member: discord.Member = None, *, reason=None):
     if member == None:
         await ctx.reply("Mention the member to be banned!", delete_after=3)
     if reason == None:
         reason = "None"
     await member.ban(reason=reason)
-    await ctx.reply(f"Successfully banned {member.mention}")
-
+    embed = discord.Embed(title="Success ✅", description=f"Successfully banned {member.mention} from **{ctx.guild}**")
+    await ctx.reply(embed=embed)
 
 @client.command()
 @commands.has_permissions(ban_members=True)
@@ -385,18 +389,8 @@ async def clear(ctx, amount=1):
         await ctx.reply('**Not able to delete so many messages! Please try a number below 150.** ❌', delete_after=5)
     else:
         await ctx.channel.purge(limit=amount)
-        await ctx.send(f'**Cleared {len(amount)} messages!** ✅', delete_after=3)
+        await ctx.send(f'**Cleared {realamount} messages!** ✅', delete_after=3)
 
-
-@client.command(aliases=['close', 'shutup'])
-async def shutdown(ctx):
-    user = ctx.message.author
-    if user.id == 943492607688970262 or user.id == 895581887593078804:
-        await ctx.reply("Successful shutdown")
-        print("Shutdown successful")
-        await client.close()
-    else:
-        await ctx.reply("Not allowed")
 
 @client.command(aliases=['level'])
 @commands.cooldown(1, 5, commands.BucketType.user)
