@@ -277,7 +277,7 @@ async def warn(ctx, user:discord.Member, *, reason):
     count = warn_count["warns"]
     new_count = count + 1
 
-    col.update_one({"memberid": id}, {"$set": {"warns": new_count}, "guild": guild})
+    col.update_one({"memberid": id}, {"$set": {"warns": new_count}}, {"guild": guild})
 
     await ctx.reply(f"Warned {user.mention} for **{reason}** in **{ctx.guild}**| This user has **{new_count}** warnings now.")
 
