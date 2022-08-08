@@ -23,7 +23,7 @@ cluster = MongoClient(mango_url, tlsCAFile=ca)
 db = cluster["cb42"]
 coll = db["prefix"]
 collection = db["level"]
-warn = db["warnings"]
+col = db["warns"]
 
 
 def prefix(client, message):
@@ -269,15 +269,15 @@ async def kick(ctx, member: discord.Member = None, *, reason=None):
 async def warn(ctx, user:discord.Member, *, reason):
     guild = ctx.guild
     id = user.id
-    if warn.count_documents({"memberid": id}) == 0:
-        warn.insert_one({"memberid": id, "warns": 0})
+    if col.count_documents({"memberid": id}) == 0:
+        col.insert_one({"memberid": id, "warns": 0})
 
-    warn_count = warn.find_one({"memberid": id})
+    warn_count = col.find_one({"memberid": id})
 
     count = warn_count["warns"]
     new_count = count + 1
 
-    warn.update_one({"memberid": id}, {"$set": {"warns": new_count}})
+    col.update_one({"memberid": id}, {"$set": {"warns": new_count}})
 
     await ctx.reply(f"Warned {user.mention} for **{reason}** in **{ctx.guild}**| This user has **{new_count}** warnings now.")
 
@@ -701,15 +701,15 @@ async def rank(ctx):
 async def warn(ctx, user:Option(discord.Member, required=True), *, reason):
     guild = ctx.guild
     id = user.id
-    if warn.count_documents({"memberid": id}) == 0:
-        warn.insert_one({"memberid": id, "warns": 0})
+    if col.count_documents({"memberid": id}) == 0:
+        col.insert_one({"memberid": id, "warns": 0})
 
-    warn_count = warn.find_one({"memberid": id})
+    warn_count = col.find_one({"memberid": id})
 
     count = warn_count["warns"]
     new_count = count + 1
 
-    warn.update_one({"memberid": id}, {"$set": {"warns": new_count}})
+    col.update_one({"memberid": id}, {"$set": {"warns": new_count}})
 
     await ctx.respond(f"Warned {user.mention} for **{reason}** in **{ctx.guild}**| This user has **{new_count}** warnings now.")
 
