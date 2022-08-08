@@ -23,7 +23,6 @@ cluster = MongoClient(mango_url, tlsCAFile=ca)
 db = cluster["cb42"]
 coll = db["prefix"]
 collection = db["level"]
-col = db["warns"]
 
 
 def prefix(client, message):
@@ -95,7 +94,7 @@ class DropDownMenu(discord.ui.View):
             view = View()
             modembed = discord.Embed(
                 title="Moderation commands",
-                description="`clear`, `kick`, `ban`, `unban`, `membercount`, `setprefix`, `addrole`, `delrole`, `mute`, `unmute`, `warn`",
+                description="`clear`, `kick`, `ban`, `unban`, `membercount`, `setprefix`, `addrole`, `delrole`, `mute`, `unmute`",
             )
 
             await interaction.response.send_message(embed=modembed, view=view, ephemeral=True)
@@ -262,24 +261,6 @@ async def kick(ctx, member: discord.Member = None, *, reason=None):
         reason = "None"
     await member.kick(reason=reason)
     await ctx.reply(f"Successfully kicked {member.mention}")
-
-@client.command()
-@commands.has_permissions(manage_guild=True)
-@commands.cooldown(1, 5, commands.BucketType.user)
-async def warn(ctx, user:discord.Member, *, reason):
-    guild = ctx.guild.id
-    id = user.id
-    if col.count_documents({"memberid": id}, {"guild":guild}) == 0:
-        col.insert_one({"memberid": id, "warns": 0, "guild": guild})
-
-    warn_count = col.find_one({"memberid": id, "guild": guild})
-
-    count = warn_count["warns"]
-    new_count = count + 1
-
-    col.update_one({"memberid": id}, {"$set": {"warns": new_count}}, {"guild": guild})
-
-    await ctx.reply(f"Warned {user.mention} for **{reason}** in **{ctx.guild}**| This user has **{new_count}** warnings now.")
 
 @client.command(aliases=['8b', '8ball'])
 @commands.cooldown(1, 5, commands.BucketType.user)
@@ -694,24 +675,6 @@ async def rank(ctx):
     author_id = ctx.author.id
     level = collection.find_one({"_id": author_id})["Level"]
     await ctx.respond(f"**You are level:** `{level}`")
-
-@client.slash_command(name="warn", description="Warn a user")
-@commands.has_permissions(manage_guild=True)
-@commands.cooldown(1, 5, commands.BucketType.user)
-async def warn(ctx, user:Option(discord.Member, required=True), *, reason):
-    guild = ctx.guild.id
-    id = user.id
-    if col.count_documents({"memberid": id}) == 0:
-        col.insert_one({"memberid": id, "warns": 0, "guild":guild})
-
-    warn_count = col.find_one({"memberid": id, "guild":guild})
-
-    count = warn_count["warns"]
-    new_count = count + 1
-
-    col.update_one({"memberid": id}, {"guild":guild}, {"$set": {"warns": new_count}})
-
-    await ctx.respond(f"Warned {user.mention} for **{reason}** in **{ctx.guild}**| This user has **{new_count}** warnings now.")
 
 @client.slash_command(name="eightball", description="Ask some questions!")
 @commands.cooldown(1, 5, commands.BucketType.user)
