@@ -267,17 +267,17 @@ async def kick(ctx, member: discord.Member = None, *, reason=None):
 @commands.has_permissions(manage_guild=True)
 @commands.cooldown(1, 5, commands.BucketType.user)
 async def warn(ctx, user:discord.Member, *, reason):
-    guild = ctx.guild
+    guild = ctx.guild.id
     id = user.id
     if col.count_documents({"memberid": id}) == 0:
-        col.insert_one({"memberid": id, "warns": 0})
+        col.insert_one({"memberid": id, "warns": 0, "guild": guild})
 
-    warn_count = col.find_one({"memberid": id})
+    warn_count = col.find_one({"memberid": id, "guild": guild})
 
     count = warn_count["warns"]
     new_count = count + 1
 
-    col.update_one({"memberid": id}, {"$set": {"warns": new_count}})
+    col.update_one({"memberid": id}, {"$set": {"warns": new_count}, "guild": guild})
 
     await ctx.reply(f"Warned {user.mention} for **{reason}** in **{ctx.guild}**| This user has **{new_count}** warnings now.")
 
