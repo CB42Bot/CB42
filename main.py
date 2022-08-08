@@ -330,7 +330,7 @@ async def invite(ctx):
 @client.command()
 @commands.cooldown(1, 5, commands.BucketType.user)
 @commands.has_permissions(ban_members=True)
-async def kick(ctx, member: discord.Member = None, *, reason=None):
+async def ban(ctx, member: discord.Member = None, *, reason=None):
     if member == None:
         await ctx.reply("Mention the member to be banned!", delete_after=3)
     if reason == None:
