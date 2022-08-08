@@ -269,7 +269,7 @@ async def kick(ctx, member: discord.Member = None, *, reason=None):
 async def warn(ctx, user:discord.Member, *, reason):
     guild = ctx.guild.id
     id = user.id
-    if col.count_documents({"memberid": id}) == 0:
+    if col.count_documents({"memberid": id}, {"guild":guild}) == 0:
         col.insert_one({"memberid": id, "warns": 0, "guild": guild})
 
     warn_count = col.find_one({"memberid": id, "guild": guild})
